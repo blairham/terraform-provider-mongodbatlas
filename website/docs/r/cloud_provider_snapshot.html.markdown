@@ -16,12 +16,35 @@ On-demand snapshots happen immediately, unlike scheduled snapshots which occur a
 ## Example Usage
 
 ```hcl
-resource "mongodbatlas_cloud_provider_snapshot" "test" {
-  project_id        = "<PROJECT-ID>"
-  cluster_name      = "MyClusterName"
-  description       = "SomeDescription"
-  retention_in_days = 1
-}
+  resource "mongodbatlas_cluster" "my_cluster" {
+    project_id   = "5cf5a45a9ccf6400e60981b6"
+    name         = "MyCluster"
+    disk_size_gb = 5
+
+  //Provider Settings "block"
+    provider_name               = "AWS"
+    provider_region_name        = "EU_WEST_2"
+    provider_instance_size_name = "M10"
+    provider_backup_enabled     = true   // enable cloud provider snapshots
+    provider_disk_iops          = 100
+    provider_encrypt_ebs_volume = false
+  }
+
+  resource "mongodbatlas_cloud_provider_snapshot" "test" {
+    project_id        = mongodbatlas_cluster.my_cluster.project_id
+    cluster_name      = mongodbatlas_cluster.my_cluster.name
+    description       = "myDescription"
+    retention_in_days = 1
+  }
+  
+  resource "mongodbatlas_cloud_provider_snapshot_restore_job" "test" {
+    project_id      = mongodbatlas_cloud_provider_snapshot.test.project_id
+    cluster_name    = mongodbatlas_cloud_provider_snapshot.test.cluster_name
+    snapshot_id     = mongodbatlas_cloud_provider_snapshot.test.snapshot_id
+    delivery_type = {
+      download = true
+    }
+  }
 ```
 
 ## Argument Reference
@@ -35,12 +58,13 @@ resource "mongodbatlas_cloud_provider_snapshot" "test" {
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - Unique identifier of the snapshot.
+* `snapshot_id` - Unique identifier of the snapshot.
 * `created_at` - UTC ISO 8601 formatted point in time when Atlas took the snapshot.
 * `description` - Description of the snapshot. Only present for on-demand snapshots.
 * `expires_at` - UTC ISO 8601 formatted point in time when Atlas will delete the snapshot.
 * `master_key_uuid` - Unique ID of the AWS KMS Customer Master Key used to encrypt the snapshot. Only visible for clusters using Encryption at Rest via Customer KMS.
 * `mongod_version` - Version of the MongoDB server.
+* `id` -	Unique identifier used for terraform for internal manages.
 * `snapshot_type` - Specified the type of snapshot. Valid values are onDemand and scheduled.
 * `status` - Current status of the snapshot. One of the following values will be returned: queued, inProgress, completed, failed.
 * `storage_size_bytes` - Specifies the size of the snapshot in bytes.
