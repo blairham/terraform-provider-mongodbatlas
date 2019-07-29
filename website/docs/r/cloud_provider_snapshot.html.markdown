@@ -64,7 +64,7 @@ In addition to all arguments above, the following attributes are exported:
 * `expires_at` - UTC ISO 8601 formatted point in time when Atlas will delete the snapshot.
 * `master_key_uuid` - Unique ID of the AWS KMS Customer Master Key used to encrypt the snapshot. Only visible for clusters using Encryption at Rest via Customer KMS.
 * `mongod_version` - Version of the MongoDB server.
-* `id` -	Unique identifier used for terraform for internal manages.
+* `id` -	The Terraform's unique identifier used internally for state management.
 * `snapshot_type` - Specified the type of snapshot. Valid values are onDemand and scheduled.
 * `status` - Current status of the snapshot. One of the following values will be returned: queued, inProgress, completed, failed.
 * `storage_size_bytes` - Specifies the size of the snapshot in bytes.
